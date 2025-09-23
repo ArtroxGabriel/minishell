@@ -1,0 +1,32 @@
+# Build directories
+build/
+
+# CMake files
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+CTestTestfile.cmake
+
+# Test binaries
+tests_bin/
+
+# Temporary files
+*.tmp
+*.swp
+*.swo
+
+# Logs
+*.log
+
+# Python virtual environments
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Docker
+*.tar
+
+# VS Code
+*.code-workspace
+Testing/Temporary

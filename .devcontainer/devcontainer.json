@@ -1,0 +1,64 @@
+{
+  "name": "os-c-template - C Development Container",
+  "image": "mcr.microsoft.com/vscode/devcontainers/cpp:0-ubuntu-22.04",
+  "build": {
+    "args": {}
+  },
+  "context": "..",
+  "workspaceFolder": "/workspace",
+  "workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind,consistency=cached",
+  "remoteUser": "vscode",
+  "runArgs": ["--cap-add=SYS_PTRACE", "--security-opt", "seccomp=unconfined"],
+  "containerEnv": {
+    "CC": "gcc",
+    "CXX": "g++",
+    "LC_ALL": "C.UTF-8",
+    "LANG": "C.UTF-8"
+  },
+  "settings": {
+    "C_Cpp.intelliSenseEngine": "Tag Parser",
+    "C_Cpp.default.configurationProvider": "ms-vscode.cmake-tools",
+    "clangd.path": "/usr/bin/clangd",
+    "editor.formatOnSave": true,
+    "C_Cpp.formatting": "Default",
+    "files.trimTrailingWhitespace": true,
+    "files.insertFinalNewline": true,
+    "cmake.generator": "Ninja",
+    "cmake.configureSettings": {
+      "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+    },
+    "cmake.buildToolArgs": "",
+    "cmake.buildDirectory": "${workspaceFolder}/build"
+  },
+  "extensions": [
+    "ms-vscode.cpptools",
+    "ms-vscode.cmake-tools",
+    "llvm-vs-code-extensions.vscode-clangd",
+    "ms-vsliveshare.vsliveshare",
+    "ms-azuretools.vscode-docker",
+    "timonwong.shellcheck",
+    "ms-vscode.cpptools-extension-pack"
+  ],
+  "postCreateCommand": "sudo apt-get update -y && sudo apt-get install -y --no-install-recommends \\ \n  clang-format clang-tidy cppcheck lcov gcovr ninja-build build-essential cmake git \\ \n  python3-pip python3-venv libcmocka-dev valgrind pkg-config || true && \\ \n  # ensure clangd is present (some base images might already include it)\n  if ! command -v clangd >/dev/null 2>&1; then sudo apt-get install -y clangd-12 || true; fi && \\ \n  # install cmake-format (optional) and other python tooling\n  python3 -m pip install --user cmake-format || true && \\ \n  # create build dir for convenience\n  mkdir -p /workspace/build || true",
+  "postStartCommand": "echo 'Container started. Run: cmake -S . -B build && cmake --build build' && test -f /workspace/.clang-format || cp /workspace/.devcontainer/.clang-format /workspace/ || true",
+  "remoteEnv": {},
+  "mounts": [],
+  "containerUserns": "host",
+  "features": {},
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "editor.defaultFormatter": "llvm-vs-code-extensions.vscode-clangd",
+        "editor.formatOnSave": true
+      },
+      "extensions": [
+        "ms-vscode.cpptools",
+        "ms-vscode.cmake-tools",
+        "llvm-vs-code-extensions.vscode-clangd"
+      ]
+    }
+  },
+  "forwardPorts": [],
+  "shutdownAction": "stopContainer",
+  "description": "Development container for C projects (CMake-based). Provides clang-format, clang-tidy, cmake, ninja, gdb and other common tooling used in systems programming courses."
+}

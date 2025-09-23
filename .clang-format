@@ -1,0 +1,70 @@
+# clang-format configuration for os-c-template
+# - Based on Google style with adjustments for C projects used in Systems Operating courses
+# - Uses 4-space indentation, Allman braces, pointer on the left (int* p)
+# - Column limit set to 100 to accommodate longer comments and diagnostic output
+#
+# To use:
+#  - Place this file at the repository root (already here).
+#  - Run: clang-format -i $(git ls-files '*.c' '*.h')
+#  - Or with the CMake `format` target added in the template.
+
+BasedOnStyle: Google
+IndentWidth: 4
+TabWidth: 4
+UseTab: Never
+
+# Keep short functions on a single line only if they're truly empty
+AllowShortFunctionsOnASingleLine: InlineOnly
+
+# Brace wrapping: Allman style (open brace on its own line) which is common in systems code
+BreakBeforeBraces: Allman
+
+# Line length limit
+ColumnLimit: 100
+
+# Pointer alignment: prefer `int *p` or `int* p`?
+# Left places the * adjacent to the type: `int* p`
+# For this course we prefer `int *p` (PointerAlignment: Right) or `int* p`?
+# Many C coders prefer star next to the variable (Right). Adjust if you prefer otherwise.
+PointerAlignment: Left
+DerivePointerAlignment: false
+
+# Alignments and formatting behavior
+AlignConsecutiveDeclarations: true
+AlignConsecutiveAssignments: true
+AlignTrailingComments: true
+
+# Space rules
+SpaceBeforeParens: ControlStatements
+SpacesInParentheses: false
+SpacesInSquareBrackets: false
+
+# Don't put short `if` statements on one line
+AllowShortIfStatementsOnASingleLine: false
+AllowShortLoopsOnASingleLine: false
+AllowShortCaseLabelsOnASingleLine: false
+
+# Keep include ordering stable; do not auto-sort includes (class/assignment preference)
+SortIncludes: false
+IncludeBlocks: Preserve
+
+# Reflow long comments where appropriate
+ReflowComments: true
+
+# Control formatting for function return types and templates
+AlwaysBreakAfterReturnType: None
+AlwaysBreakTemplateDeclarations: false
+
+# Keep preprocessor directives at column 0
+IndentPPDirectives: None
+
+# Maintain existing empty lines
+MaxEmptyLinesToKeep: 2
+
+# C-specific: prefer not to add extra spaces around casts and C-style constructs
+SpaceAfterCStyleCast: false
+
+# Use this to preserve certain formatting in generated code or special blocks
+PenaltyReturnTypeOnItsOwnLine: 200
+
+# If you want editor integrations to pick up this style, ensure VSCode/clangd use project .clang-format

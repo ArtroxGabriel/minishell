@@ -1,0 +1,75 @@
+# docker-compose for development and CI/test workflows
+# Place this file in docker/ and run from the os-c-template directory:
+#   docker compose -f docker/docker-compose.yml up --build dev
+# or to run CI test:
+#   docker compose -f docker/docker-compose.yml run --rm ci
+#
+# The compose file defines:
+#  - dev: interactive development container (mounts workspace read-write)
+#  - ci: non-interactive container intended to run the build & test entrypoint
+#
+# Notes:
+#  - Paths are relative to the repository root when mounting; this compose file is
+#    stored under docker/, so volumes map `..` -> project root.
+#  - The Dockerfile used is docker/Dockerfile (relative to project root).
+version: "3.8"
+
+services:
+  dev:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    image: os-c-template:dev
+    container_name: os_c_template_dev
+    # Mount the repository into /workspace inside the container so edits are visible immediately.
+    # Use delegated for faster host->container updates on macOS (optional behavior).
+    volumes:
+      - ..:/workspace:delegated
+      # Optional: uncomment to forward Docker socket if you need Docker-in-Docker features
+      # - /var/run/docker.sock:/var/run/docker.sock:ro
+    working_dir: /workspace
+    environment:
+      CC: gcc
+      CXX: g++
+      TZ: UTC
+    # Keep an interactive TTY open and allow attaching a shell
+    stdin_open: true
+    tty: true
+    # Default command opens a shell. Override to run arbitrary commands.
+    command: ["bash", "-lc", "exec bash"]
+    # Allocate a reasonable sized /dev/shm for some tooling (valgrind, etc.)
+    shm_size: "512m"
+    networks:
+      - os_net
+
+  ci:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    image: os-c-template:ci
+    container_name: os_c_template_ci
+    # Mount read-only to avoid accidental modifications during CI runs
+    volumes:
+      - ..:/workspace:ro
+    working_dir: /workspace
+    # Use the entrypoint script provided in the Docker image to run build/test tasks.
+    entrypoint: ["/usr/local/bin/ctemplate-entrypoint.sh"]
+    # Default command: run the `test` flow (build if necessary, then run ctest)
+    command: ["test"]
+    environment:
+      CMAKE_GENERATOR: Ninja
+      CMAKE_BUILD_TYPE: Debug
+    networks:
+      - os_net
+
+# Optional helper service that exposes a shell with forwarded ports for remote editor usage.
+# You can `docker compose up dev-ssh` and then connect tools to the container if you expose ports.
+# Keep it minimal here; add ports only if needed.
+# dev-ssh:
+#   <<: *dev_common
+#   ports:
+#     - "2222:22"
+
+networks:
+  os_net:
+    driver: bridge
