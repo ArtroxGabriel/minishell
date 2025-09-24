@@ -12,7 +12,7 @@ Carlos Maziero, DINF/UFPR 2020
 #include <sys/types.h>
 #include <sys/wait.h>
 
-int main()
+int main_fork()
 {
     int retval;
 

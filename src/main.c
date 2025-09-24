@@ -33,14 +33,20 @@ void execute_command(char **args, int background) {
   // Gerenciar background se necessário
 }
 
+/// @brief Verify if the command is internal
+/// @param args array of arguments, where args[0] is the command
+/// @return 1 if internal command, 0 otherwise
 int is_internal_command(char **args) {
-  // TODO: Verificar se é comando interno
-  // exit, pid, jobs, wait
+  if (strcmp(args[0], "exit") == 0 || strcmp(args[0], "pid") == 0 ||
+      strcmp(args[0], "jobs") == 0 || strcmp(args[0], "wait") == 0)
+    return 1;
+
   return 0;
 }
 
 void handle_internal_command(char **args) {
   // TODO: Executar comandos internos
+  printf("Comando interno: %s\n", args[0]);
 }
 
 int main() {
@@ -69,9 +75,6 @@ int main() {
 
     // Fazer parsing do comando
     parse_command(input, args, &background);
-    for (size_t i = 0; args[i] != NULL; i++) {
-      printf("%s\n", args[i]);
-    }
 
     // Executar comando
     if (is_internal_command(args)) {

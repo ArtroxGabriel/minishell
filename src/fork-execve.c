@@ -12,7 +12,7 @@ Carlos Maziero, DINF/UFPR 2020
 #include <sys/types.h>
 #include <sys/wait.h>
 
-int main(int argc, char* argv[], char* envp[])
+int main_fork_execv(int argc, char* argv[], char* envp[])
 {
     int retval;
 
