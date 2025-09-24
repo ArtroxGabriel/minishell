@@ -33,6 +33,14 @@ Before coding the mini-shell, students should analyze and run example programs:
 **Compilation examples:**
 
 ```bash
+mkdir build
+cd build
+cmake ..
+make
+./minishell
+
+OR
+
 gcc -Wall fork.c -o fork
 gcc -Wall fork-print.c -o fork-print
 gcc -Wall fork-execve.c -o fork-execve
