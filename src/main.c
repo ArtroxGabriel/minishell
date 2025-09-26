@@ -13,13 +13,15 @@ pid_t bg_processes[10];
 int bg_count = 0;
 pid_t last_child_pid = 0; // Armazena PID do último processo filho
 
+void check_error(int retval, char *msg) {
+  if (retval < 0) {
+    perror(msg);
+    exit(retval);
+  }
+}
+
 void parse_command(char *input, char **args, int *background) {
-  // TODO: Implementar parsing do comando
-  // Dividir a string em argumentos
-  // Verificar se termina com &
-
   int i = 0;
-
   char *delim = " ";
 
   args[i] = strtok(input, delim);
@@ -28,9 +30,22 @@ void parse_command(char *input, char **args, int *background) {
 }
 
 void execute_command(char **args, int background) {
-  // TODO: Implementar execução
-  // Usar fork() e execvp()
-  // Gerenciar background se necessário
+  int retval = fork();
+
+  check_error(retval, "Fork falhou");
+
+  // processo filho
+  if (retval == 0) {
+    retval = execvp(args[0], args);
+    check_error(retval, "Error ao executar comando externo");
+    return;
+  }
+
+  // processo pai
+  if (background == 0) {
+    retval = wait(0);
+    check_error(retval, "Error no wait");
+  }
 }
 
 /// @brief Verify if the command is internal
@@ -45,8 +60,34 @@ int is_internal_command(char **args) {
 }
 
 void handle_internal_command(char **args) {
-  // TODO: Executar comandos internos
-  printf("Comando interno: %s\n", args[0]);
+  char *command = args[0];
+
+  if (strcmp(command, "exit") == 0) {
+    printf("Shell encerrado!\n");
+    exit(0);
+  }
+
+  if (strcmp(command, "pid") == 0) {
+    pid_t pid = getpid();
+    printf("%d %d\n", pid, bg_processes[0]);
+    return;
+  }
+
+  // TODO: fazer quando for lidar com background
+  if (strcmp(command, "jobs") == 0) {
+    printf("job macedo\n");
+    return;
+  }
+
+  // TODO: fazer quando for lidar com background
+  if (strcmp(command, "wait") == 0) {
+
+    printf("wait\n");
+    return;
+  }
+
+  perror("Comando interno desconhecido");
+  exit(1);
 }
 
 int main() {
@@ -84,6 +125,5 @@ int main() {
     }
   }
 
-  printf("Shell encerrado!\n");
   return 0;
 }
