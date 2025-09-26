@@ -13,12 +13,9 @@ pid_t bg_processes[10];
 int bg_count = 0;
 pid_t last_child_pid = 0; // Armazena PID do último processo filho
 
-void check_error(int retval, char *msg) {
-  if (retval < 0) {
-    perror(msg);
-    exit(retval);
-  }
-}
+void check_error(int, char *);
+void add_bg_process(pid_t pid);
+void clean_finished_processes();
 
 void parse_command(char *input, char **args, int *background) {
   int i = 0;
@@ -27,11 +24,17 @@ void parse_command(char *input, char **args, int *background) {
   args[i] = strtok(input, delim);
   while (args[i] != NULL)
     args[++i] = strtok(NULL, delim);
+
+  if (i > 0 && strcmp(args[i - 1], "&") == 0) {
+    *background = 1;
+    args[i - 1] = NULL;
+  }
 }
 
 void execute_command(char **args, int background) {
-  int retval = fork();
+  pid_t pid = fork();
 
+  int retval = pid;
   check_error(retval, "Fork falhou");
 
   // processo filho
@@ -42,15 +45,15 @@ void execute_command(char **args, int background) {
   }
 
   // processo pai
-  if (background == 0) {
-    retval = wait(0);
+  if (background) {
+    add_bg_process(pid);
+    printf("[%d] %d\n", bg_count, pid);
+  } else {
+    retval = wait(NULL);
     check_error(retval, "Error no wait");
   }
 }
 
-/// @brief Verify if the command is internal
-/// @param args array of arguments, where args[0] is the command
-/// @return 1 if internal command, 0 otherwise
 int is_internal_command(char **args) {
   if (strcmp(args[0], "exit") == 0 || strcmp(args[0], "pid") == 0 ||
       strcmp(args[0], "jobs") == 0 || strcmp(args[0], "wait") == 0)
@@ -73,16 +76,38 @@ void handle_internal_command(char **args) {
     return;
   }
 
-  // TODO: fazer quando for lidar com background
   if (strcmp(command, "jobs") == 0) {
-    printf("job macedo\n");
+    if (bg_count == 0) {
+      printf("Nenhum processo em background\n");
+      return;
+    }
+
+    printf("Processos em background:\n");
+    for (register int i = 0; i < bg_count; i++)
+      printf("[%d] %d Running\n", i + 1, bg_processes[i]);
+
     return;
   }
 
-  // TODO: fazer quando for lidar com background
   if (strcmp(command, "wait") == 0) {
+    printf("Aguardando processo em background\n");
+    while (bg_count > 0) {
+      int status;
+      pid_t pid = wait(&status);
 
-    printf("wait\n");
+      for (register int i = 0; i < bg_count; i++) {
+        if (pid != bg_processes[i])
+          continue;
+
+        for (register int j = i; j < bg_count - 1; j++) {
+          bg_processes[j] = bg_processes[j + 1];
+        }
+        bg_count--;
+        break;
+      }
+    }
+
+    printf("Todos os processos terminaram\n");
     return;
   }
 
@@ -98,6 +123,9 @@ int main() {
   printf("Mini-Shell iniciado (PID: %d)\n", getpid());
   printf("Digite 'exit' para sair\n\n");
   while (1) {
+    clean_finished_processes();
+    background = 0;
+
     printf("minishell> ");
     fflush(stdout);
 
@@ -126,4 +154,36 @@ int main() {
   }
 
   return 0;
+}
+
+void check_error(int retval, char *msg) {
+  if (retval < 0) {
+    perror(msg);
+    exit(retval);
+  }
+}
+
+void add_bg_process(pid_t pid) {
+  if (bg_count < 10) {
+    bg_processes[bg_count++] = pid;
+    last_child_pid = pid;
+  }
+}
+
+void clean_finished_processes() {
+  int status;
+  pid_t pid;
+
+  while ((pid = waitpid(-1, &status, WNOHANG)) > 0) {
+    for (register int i = 0; i < bg_count; i++) {
+      if (bg_processes[i] == pid) {
+        printf("[%d]+ Done\n", i + 1);
+        for (register int j = i; j < bg_count - 1; j++) {
+          bg_processes[j] = bg_processes[j + 1];
+        }
+        bg_count--;
+        break;
+      }
+    }
+  }
 }

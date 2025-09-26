@@ -6,36 +6,30 @@ Compilar com gcc -Wall fork-print.c -o fork-print
 Carlos Maziero, DINF/UFPR 2020
 */
 
-#include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <unistd.h>
 
-int main_fork_print()
-{
-    int retval, x;
+int main_() {
+  int retval, x;
 
-    x      = 0;
-    retval = fork();
-    printf("No processo %5d x vale %d\n", getpid(), x);
+  x = 0;
+  retval = fork();
+  printf("No processo %5d x vale %d\n", getpid(), x);
 
-    if (retval < 0)
-    {
-        perror("Erro");
-        exit(1);
-    }
-    else if (retval > 0)
-    {
-        x = 0;
-        wait(0);
-    }
-    else
-    {
-        x++;
-        sleep(5);
-    }
+  if (retval < 0) {
+    perror("Erro");
+    exit(1);
+  } else if (retval > 0) {
+    x = 0;
+    wait(0);
+  } else {
+    x++;
+    sleep(1);
+  }
 
-    printf("No processo %5d x vale %d\n", getpid(), x);
-    exit(0);
+  printf("No processo %5d x vale %d\n", getpid(), x);
+  exit(0);
 }
