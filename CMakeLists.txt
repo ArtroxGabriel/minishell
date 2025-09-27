@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.11)
 project(minishell)
 
 set(CMAKE_CXX_STANDARD 17)
@@ -11,3 +11,5 @@ file(GLOB SRC_FILES CONFIGURE_DEPENDS
 add_executable(minishell
   ${SRC_FILES}
 )
+
+add_subdirectory(tests)

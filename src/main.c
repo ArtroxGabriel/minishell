@@ -115,6 +115,7 @@ void handle_internal_command(char **args) {
   exit(1);
 }
 
+#ifndef TESTING
 int main() {
   char input[MAX_CMD_LEN];
   char *args[MAX_ARGS];
@@ -155,6 +156,7 @@ int main() {
 
   return 0;
 }
+#endif
 
 void check_error(int retval, char *msg) {
   if (retval < 0) {
