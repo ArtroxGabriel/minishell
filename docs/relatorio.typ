@@ -22,7 +22,7 @@
 #table(
   columns: (auto, 1fr, 1fr, 1fr),
   [*Nome*],  "Antonio Gabriel", "Erik Bayerlein", "Julia Naomi",
-  [*Matrícula*], "539628", "<define>", "538606"
+  [*Matrícula*], "539628", "537606", "538606"
 )
 
 // apply style
@@ -32,20 +32,27 @@
 = Dificuldades encontradas e soluções aplicadas
 
 == Linguagem C <language_c>
-Os membros da equipe tiveram uma dificuldade com `C` como por exemplo lidar com array de strings ou como implementar certos conceitos.
+A principal dificuldade encontrada foi o domínio da linguagem `C`.
 
-A solução aplicada foi pesquisa e muita prática, evitamos o uso de LLM's para resolver problemas de código, nos forçando a pesquisar e entender o problema, por exemplo, sabíamos o que precisávamos fazer mas não como fazer em C, por isso pesquisamos como fazer e testamos implementação, além disso o documento de especificação da pratica auxiliou muito.
+Isso ficou batante evidente quando tentamos lidar com array de strings ou implementar certos conceitos.
 
-Semelhante a isso, implementar testes automatizados paras funções utilizadas na `main()`, também foram um desafio, por recomendação de um amigo, optamos por utilizar a biblioteca check. Apos algumas pesquisas de como configurar e implementar testes automatizados em C, os testes foram implementados com sucesso, como se pode ver na @auto_test
+Dessa forma, realizamos pesquisas e práticas para entender os problemas.
+
+Além disso, o livro do professor Carlos Maziero e documento de especificação da prática nos auxiliou muito no decorrer do trabalho.
+
+Portanto, muitas vezes sabíamos o que precisava ser feito, mas, uma vez que não tínhamos domínio da linguagem escolhida,
+não conseguiamos implementar de uma maneira satisfatória.
+
+Por fim, a implementação de testes automatizados paras funções utilizadas na `main()` também foram um desafio.
+Após algumas pesquisas, optamos por utilizar a biblioteca check, podendo ver na @auto_test
 
 == Manipulação de strings
-Lidar com string foi o pequeno problema que enfrentamos inicialmente devido a comparações de tipos e ponteiros para memória, mas como dito no @language_c, após algumas pesquisas em sites como #link("https://stackoverflow.com")[stackoverflow]
+Lidar com string foi, de fato, um problema que enfrentamos inicialmente, principalmente devido a comparações de tipos e ponteiros 
+para memória. Contudo, como apontado anteriormente em @language_c, conseguimos solucionar após algumas pesquisas.
 
-Um dos exemplos enfrentados foram:
+Exemplo de problemas enfrentados:
 - realizar um split da string(char \*) e salvar no array
 - comparar strings(variável do tipo char \* com "string")
-
-Novamente, como dito na @language_c, a solução aplicada foi soluções encontradas no stackoverflow com sugestões de como implementar, por exemplo, "how to split string in C", "how to split string and save in an array".
 
 ```c
 args[i] = strtok(input, delim);
@@ -55,19 +62,26 @@ while (args[i] != NULL)
 
 
 == Memoria entre processos.
+No trabalho de lidar com as variáveis globais last_child_pid e bg_processes, inicialmente os valores não 
+estavam sendo armazenados corretamente. Por esse motivo, ao executar os comandos jobs ou pid, a saída não correspondia ao esperado.
 
-Na parte do trabalho de lidar com as variáveis globais, last_child_pid e bg_processes, a principio o valor não estava sendo salvo corretamente, por isso quando executava o comando jobs ou pid, o output não estava como deveria.
+A solução aplicada foi baseada no documento de especificação. A partir dele, conseguimos compreender o funcionamento esperado 
+e ajustar a implementação para que os valores das variáveis fossem armazenados corretamente
 
-A solução aplicada veio do documento de especificação, através dele conseguimos entender
+A princípio, optamos por utilizar a chamada de sistema execve(). No entanto, não sabíamos que 
+ela substitui o processo atual pelo novo programa. Ou seja, o processo filho deixa de ser o mesmo após a execução do 
+execve() e passa a ser inteiramente o programa chamado. Como consequência, o processo filho perde todas 
+as variáveis e estados que possuía antes da chamada.
 
-A principio escolhemos utilizar a metodologia do execve mas o que não sabíamos é que o execve substitui o processo atual pelo novo processo, ou seja, o processo filho deixa de ser o mesmo que era antes do execve() e passa a ser o programa que foi chamado pelo execve(), por conta disso, o processo filho perde todas as variáveis e estados que tinha antes do execve().
-Isso nos trouxe um grande problema, pois precisamos manter a lista de pids atualizada, e como o processo filho perde todas as variáveis e estados que tinha antes do execve(), não conseguimos manter a lista de pids atualizada.
+Isso gerou um grande problema, já que precisávamos manter a lista de PIDs atualizada.
+Como o processo filho perde todas as variáveis e estados após a chamada do execve(), 
+tornou-se impossível preservar essa lista dentro dele.
 
 
 = Testes realizados e resultados obtidos
 
-Para testar o minishell foi utilizado os input presentes no documento de especificação da prática, além de testes adicionais criados pela equipe.
-utilizando a biblioteca de teste Check.
+Utilizamos os inputs presentes no documento de especificação da prática, além de testes adicionais criados pela 
+equipe através da biblioteca de teste Check.
 
 == Teste manuais:
 
@@ -141,22 +155,38 @@ caption: [trecho do código de testes]
 = Análise dos conceitos de SO aplicados
 
 Conceitos aplicados:
+
 - processos em background e foreground:
-as chamadas de sistema `fork()` e `exec()` que foram utilizadas, respectivamente, para criar um novo processo e para substituir o espaço de memória do processo filho com um novo programa. o `wait()` foi utilizado para que o processo pai aguardasse a conclusão do processo filho antes de continuar sua execução, garantindo a sincronização entre os processos.
+As chamadas de sistema `fork()` e `exec()` foram utilizadas, respectivamente, com o objetivo de criar um novo 
+processo e substituir o espaço de memória do processo filho com um novo programa. O `wait()` foi 
+empregado para que o processo pai aguardasse a conclusão do processo filho antes de continuar sua execução, 
+garantindo, assim, a sincronização entre os processos.
+
 - Processos filhos:
-A utilização de uma lista de PID para gerencias os processos filhos em background foi importante para o controle e monitoramento dos processos em execução, evitando a criação de processos zumbis, garantindo que todos os processos filhos sejam devidamente aguardados e finalizados.
+A utilização de uma lista de PID para gerenciar os processos filhos em background foi importante 
+para o controle e monitoramento dos processos em execução, evitando a criação de processos zumbis e 
+garantindo que todos os processos filhos sejam devidamente aguardados e finalizados.
+
 - Parsing e interpretação de comandos:
-a uso da API strtok e execvp para dividir a string de entrada e interpretar o comando foi essencial para a funcionalidade do minishell, permitindo que o shell entenda e execute os comandos fornecidos pelo usuário de forma eficiente.
+A utilização da API strtok e execvp para dividir a string de entrada e interpretar o comando foi 
+essencial para a funcionalidade do minishell, permitindo que o shell entenda e execute os comandos fornecidos pelo usuário de forma eficiente.
 
 
 == Sobre as questoes de reflexão
 === Como os Process IDs (PIDs) diferem entre processos pai e filho?
-Ao analisar o comportamento apos executar comandos em background no minishell, foi observado que o PID do filho é diferente do PID do pai e além disso, o PID do filho é maior que o do pai, o que é possível deduzir que um processo veio depois do outro apenas comparando os PIDs
+Ao analisar o comportamento após executar comandos em background no minishell, foi observado 
+que o PID do filho é diferente do PID do pai e, além disso, o PID do filho é maior que o do pai. 
+Dessa forma, é possível deduzir que um processo veio depois do outro apenas comparando os PIDs
 
 === Por que as variáveis têm valores diferentes nos dois processos em fork-print.c?
-Como são processos diferentes, são como instancias diferente do mesmo programa, por conta disso, o S.O. aloca espaços diferentes de memoria para cada um, ao fazer isso, os valores das variáveis, caso sejam alteradas apos o `fork()`, terão valores diferente em cada processo
+Como se tratam de processos diferentes, eles funcionam como instâncias distintas do mesmo programa. 
+Por isso, o sistema operacional aloca áreas de memória separadas para cada um. Dessa forma, após 
+o fork(), qualquer alteração feita em variáveis passa a existir apenas no processo que a realizou.
 
 === O que acontece com o processo filho após a chamada execve()?
-O processo filho entra em estado de execução do novo programa, ou seja, o processo filho deixa de ser o mesmo que era antes do `execve()` e passa a ser o programa que foi chamado pelo `execve()`, por conta disso, o processo filho perde todas as variáveis e estados que tinha antes do `execve()`.
+O processo filho entra em estado de execução do novo programa, ou seja, ele deixa de ser 
+o mesmo que era antes do `execve()` e passa a ser o programa que foi chamado pelo `execve()`. 
+Assim, o processo filho perde todas as variáveis e estados que tinha antes do `execve()`.
 
-Enquanto se executado com `execvp()`, o processo filho continua sendo o mesmo, apenas executando um novo programa, mas mantendo suas variáveis e estados.
+Enquanto se executado com `execvp()`, o processo filho continua sendo o mesmo, 
+apenas executando um novo programa, mas mantendo suas variáveis e estados.
